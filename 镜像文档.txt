@@ -1,0 +1,402 @@
+docker镜像仓库：
+#docker load < registry.tar
+#docker images
+#docker tag $id  registry:2.5.2
+
+#docker run -d --restart=always \
+--log-driver=json-file --log-opt max-size=100k --log-opt max-file=5 \
+-p 5000:5000 \
+--name registry \
+registry:2.5.2
+
+_________________________________________________________________________________________________________________
+ 
+dns：
+#docker run -d --restart=always \
+ --name  bind \
+ --log-driver=json-file --log-opt max-size=100k --log-opt max-file=5 \
+ --publish 53:53/tcp --publish 53:53/udp --publish 10000:10000/tcp \
+ docker.sunyard.com:5000/bind:9.10.3
+ 
+
+dns web登录地址 ：
+https://$ip:10000 
+用户名root
+密码password
+
+_________________________________________________________________________________________________________________
+
+dubbo_admin文档:  用户名密码：admin/sunyard
+#对应zookeeper 集群
+#cat /sunyard/dubbo_admin/dubbo.properties
+dubbo.registry.address=zookeeper://10.0.1.121:2181?backup=10.0.1.122:2181,10.0.1.123:2181
+dubbo.admin.root.password=sunyard
+dubbo.admin.guest.password=guest
+
+
+#对应zookeeper 单机
+#cat /sunyard/dubbo_admin/dubbo.properties
+dubbo.registry.address=zookeeper://10.0.1.121:2181
+dubbo.admin.root.password=sunyard
+dubbo.admin.guest.password=guest
+
+
+#docker run -d  --restart=always  \
+--name admin \
+-p 8888:8080 \
+--log-driver=json-file --log-opt max-size=100k --log-opt max-file=5 \
+-v /etc/localtime:/etc/localtime \
+-v /etc/timezone:/etc/timezone \
+-v /sunyard/dubbo_admin/dubbo.properties:/usr/local/tomcat/webapps/ROOT/WEB-INF/dubbo.properties \
+docker.sunyard.com:5000/dubbo_admin:2.5.8 
+
+
+_________________________________________________________________________________________________________________
+
+zookeeper文档：
+变量：
+ENV tickTime=2000
+ENV dataDir=/var/lib/zookeeper/data
+ENV dataLogDir=/var/lib/zookeeper/logs
+ENV clientPort=2181
+ENV initLimit=20
+ENV syncLimit=10
+ENV maxClientCnxns=60
+
+单机：
+#useradd -s /sbin/nologin zookeeper -u 1015 && \
+chown -R  zookeeper:zookeeper /sunyard/middleware/zookeeper
+
+#docker run -d --restart=always \
+--name zookeeper \
+--log-driver=json-file --log-opt max-size=100k --log-opt max-file=5 \
+-e ZOO_CLUSTER=no \
+-p 2181:2181 -p 2888:2888 -p 3888:3888 \
+-v /sunyard/middleware/zookeeper:/var/lib/zookeeper  \
+docker.sunyard.com:5000/zookeeper:3.4.11
+
+
+
+集群：
+#useradd  -s /sbin/nologin  zookeeper -u 1015 && \
+chown -R  zookeeper:zookeeper /sunyard/middleware/zookeeper
+
+middleware1：
+#docker run -d --restart=always \
+--name zookeeper \
+--log-driver=json-file --log-opt max-size=100k --log-opt max-file=5 \
+-e ZOO_CLUSTER=yes \
+-p 2181:2181 -p 2888:2888 -p 3888:3888 \
+-v /sunyard/middleware/zookeeper:/var/lib/zookeeper  \
+docker.sunyard.com:5000/zookeeper:3.4.11  \
+zoo3.sunyard.com,zoo2.sunyard.com,zoo1.sunyard.com  3
+ 
+middleware2：
+#docker run -d --restart=always \
+--name zookeeper \
+-p 2181:2181 -p 2888:2888 -p 3888:3888 \
+-e ZOO_CLUSTER=yes \
+--log-driver=json-file --log-opt max-size=100k --log-opt max-file=5 \
+-v /sunyard/middleware/zookeeper:/var/lib/zookeeper  \
+docker.sunyard.com:5000/zookeeper:3.4.11  \
+zoo3.sunyard.com,zoo2.sunyard.com,zoo1.sunyard.com  2
+
+middleware3：
+#docker run -d --restart=always \
+--name zookeeper \
+-e ZOO_CLUSTER=yes \
+--log-driver=json-file --log-opt max-size=100k --log-opt max-file=5 \
+-p 2181:2181 -p 2888:2888 -p 3888:3888 \
+-v /sunyard/middleware/zookeeper:/var/lib/zookeeper  \
+docker.sunyard.com:5000/zookeeper:3.4.11  \
+zoo3.sunyard.com,zoo2.sunyard.com,zoo1.sunyard.com  1
+ 
+_________________________________________________________________________________________________________________
+ 
+ 
+jenkins：
+#useradd -s /sbin/nologin jenkins -u 1000
+#mv /sunyard/tools/jenkins  /sunyard/  && chown -R jenkins:jenkins  /sunyard/jenkins
+#docker run -d  --restart=always \
+--name jenkins \
+--log-driver=json-file --log-opt max-size=100k --log-opt max-file=5 \
+-v /sunyard/jenkins:/var/jenkins_home \
+-p 8080:8080   \
+jenkins:2.60.3
+
+
+_________________________________________________________________________________________________________________  
+
+rabbitmq  web 界面
+http://$ip:15672
+用户名密码：ftdm/ftdm@sunyard 
+
+
+rabbitmq单机：用户名：ftdm  密码：ftdm@sunyard
+
+#mkdir -p /sunyard/middleware/rabbitmq/log  \
+/sunyard/middleware/rabbitmq/data && \
+useradd -s /sbin/nologin rabbitmq -u 1001
+
+
+#docker run -d --restart=always \
+-p 4369:4369 -p 5672:5672 -p 25672:25672  -p 15672:15672 \
+--name  rabbitmq \
+--hostname stats \
+-e NAMI_LOG_LEVEL=trace \
+--log-driver=json-file --log-opt max-size=100k --log-opt max-file=5 \
+-v /sunyard/middleware/rabbitmq/log:/opt/bitnami/rabbitmq/logs \
+-v /sunyard/middleware/rabbitmq/data:/bitnami/rabbitmq \
+docker.sunyard.com:5000/rabbitmq:3.7.3
+
+
+
+
+rabbitmq集群:  用户名：ftdm  密码：ftdm@sunyard
+
+#mkdir -p /sunyard/middleware/rabbitmq/log  \
+/sunyard/middleware/rabbitmq/data && \
+useradd  -s /sbin/nologin rabbitmq -u 1001
+
+
+
+middleware1:
+#docker run -d --restart=always \
+-p 4369:4369 -p 5672:5672 -p 25672:25672  -p 15672:15672 \
+--name  rabbitmq \
+--hostname stats \
+--log-driver=json-file --log-opt max-size=100k --log-opt max-file=5 \
+-v /sunyard/middleware/rabbitmq/log:/opt/bitnami/rabbitmq/logs \
+-v /sunyard/middleware/rabbitmq/data:/bitnami/rabbitmq \
+-e NAMI_LOG_LEVEL=trace  \
+-e RABBITMQ_NODE_TYPE=stats \
+-e RABBITMQ_NODE_NAME=rabbit@stats \
+-e RABBITMQ_ERL_COOKIE=s3cr3tc00ki3 \
+docker.sunyard.com:5000/rabbitmq:3.7.3
+
+
+
+middleware2:
+#docker run -d --restart=always \
+-p 4369:4369 -p 5672:5672 -p 25672:25672  -p 15672:15672 \
+--name  rabbitmq \
+--hostname queue-disc \
+--log-driver=json-file --log-opt max-size=100k --log-opt max-file=5 \
+-v /sunyard/middleware/rabbitmq/log:/opt/bitnami/rabbitmq/logs \
+-v /sunyard/middleware/rabbitmq/data:/bitnami/rabbitmq \
+-e NAMI_LOG_LEVEL=trace \
+-e RABBITMQ_NODE_TYPE=queue-disc \
+-e RABBITMQ_NODE_NAME=rabbit@queue-disc \
+-e RABBITMQ_CLUSTER_NODE_NAME=rabbit@stats \
+-e RABBITMQ_ERL_COOKIE=s3cr3tc00ki3 \
+docker.sunyard.com:5000/rabbitmq:3.7.3
+
+#docker exec rabbitmq rabbitmq-plugins enable rabbitmq_management
+
+middleware3:
+#docker run -d --restart=always \
+-p 4369:4369 -p 5672:5672 -p 25672:25672  -p 15672:15672 \
+--name  rabbitmq \
+--hostname queue-ram \
+--log-driver=json-file --log-opt max-size=100k --log-opt max-file=5 \
+-v /sunyard/middleware/rabbitmq/log:/opt/bitnami/rabbitmq/logs \
+-v /sunyard/middleware/rabbitmq/data:/bitnami/rabbitmq \
+-e NAMI_LOG_LEVEL=trace \
+-e RABBITMQ_NODE_TYPE=queue-ram \
+-e RABBITMQ_NODE_NAME=rabbit@queue-ram \
+-e RABBITMQ_CLUSTER_NODE_NAME=rabbit@stats \
+-e RABBITMQ_ERL_COOKIE=s3cr3tc00ki3 \
+docker.sunyard.com:5000/rabbitmq:3.7.3
+
+#docker exec rabbitmq rabbitmq-plugins enable rabbitmq_management
+
+_________________________________________________________________________________________________________________
+
+
+tomcat文档：
+#useradd -s /sbin/nologin tomcat -u 1005
+
+#mkdir -p /sunyard/tomcat/log /sunyard/tomcat/data && chown -R tomcat:tomcat /sunyard/tomcat/
+
+
+#docker run -d --restart=always \
+--name tomcat \
+--log-driver=json-file --log-opt max-size=100k --log-opt max-file=5 \
+-e TOMCAT_HTTP_PORT_NUMBER=8090 \
+-e TOMCAT_PASSWORD="admin" \
+-e TOMCAT_ALLOW_REMOTE_MANAGEMENT=1 \
+-e NAMI_LOG_LEVEL=trace \
+-e JAVA_OPTS="-Dfile.encoding=UTF-8 -server -Xms2048m -Xmx2048m -XX:NewSize=512m -XX:MaxNewSize=512m -XX:MetaspaceSize=512m -XX:MaxMetaspaceSize=512m -XX:MaxTenuringThreshold=10 -XX:NewRatio=2 -XX:+DisableExplicitGC" \
+-p 8090:8090  \
+-v /sunyard/tomcat/log:/opt/bitnami/tomcat/logs \
+-v /sunyard/tomcat/data:/bitnami \
+docker.sunyard.com:5000/tomcat:8.5.27  
+
+#配置路径 /sunyard/tomcat/data/tomcat/conf
+#war存放路径 /sunyard/tomcat/data/tomcat/data
+#logs路径 /sunyard/tomcat/logs
+
+_________________________________________________________________________________________________________________
+
+elk文档：
+#mkdir -p /sunyard/elasticsearch/logs /sunyard/elasticsearch/data   /sunyard/kibana/data
+#useradd -s /sbin/nologin elasticsearch -u 1001 && \
+chown -R  elasticsearch:elasticsearch  /sunyard/elasticsearch/
+
+#docker run -d --restart=always \
+--name elasticsearch \
+--log-driver=json-file --log-opt max-size=100k --log-opt max-file=5 \
+-p 9200:9200 -p 9300:9300 \
+-v  /sunyard/elasticsearch/data:/bitnami/elasticsearch  \
+-v  /sunyard/elasticsearch/logs:/opt/bitnami/elasticsearch/logs \
+-v /etc/localtime:/etc/localtime \
+-v /etc/timezone:/etc/timezone \
+-e  ELASTICSEARCH_HEAP_SIZE=2048m \
+docker.sunyard.com:5000/elasticsearch:6.1.1
+
+
+#docker run -d --restart=always \
+--name kibana \
+-p 5601:5601 \
+--log-driver=json-file --log-opt max-size=100k --log-opt max-file=5 \
+-v /sunyard/kibana/data:/bitnami/kibana \
+-v /etc/localtime:/etc/localtime \
+-v /etc/timezone:/etc/timezone \
+-e KIBANA_ELASTICSEARCH_URL=elk.sunyard.com  \
+docker.sunyard.com:5000/kibana:6.1.1 
+
+
+_________________________________________________________________________________________________________________ 
+
+redis 文档：
+#集群 三台分别执行两个   密码：Sunyard88
+redis 密码：Sunyard88
+redis日志路径：
+/sunyard/middleware/redis/6379/data   /sunyard/middleware/redis/6379/redis.log
+/sunyard/middleware/redis/6380/data   /sunyard/middleware/redis/6380/redis.log
+
+redis集群模式：
+#useradd -s /sbin/nologin redis -u 1020 &&\
+ chown -R redis:redis /sunyard/middleware/redis
+  
+#docker run -d  --restart=always \
+--name redis_master \
+--sysctl net.core.somaxconn=10240 \
+--log-driver=json-file --log-opt max-size=100k --log-opt max-file=5 \
+-e REDIS_PASSWORD=Sunyard88 \
+-e REDIS_PORT=6379 \
+-e REDIS_CLUSTER=yes \
+--network=host  \
+-v /sunyard/middleware/redis/6379:/data/redis \
+docker.sunyard.com:5000/redis:3.2.11
+
+#docker run -d  --restart=always \
+--name redis_slave \
+--sysctl net.core.somaxconn=10240 \
+--log-driver=json-file --log-opt max-size=100k --log-opt max-file=5 \
+-e REDIS_PASSWORD=Sunyard88 \
+-e REDIS_PORT=6380 \
+-e REDIS_CLUSTER=yes \
+--network=host  \
+-v /sunyard/middleware/redis/6380:/data/redis \
+docker.sunyard.com:5000/redis:3.2.11
+
+
+全部启动后，middleware1 手动执行：
+#docker exec -it redis_master bash    \\进入容器
+#redis-trib create --replicas 1 10.0.1.131:6379 10.0.1.132:6379 10.0.1.133:6379  10.0.1.131:6380 10.0.1.132:6380 10.0.1.133:6380      
+\\必须以ip形式创建，如填写域名报错！
+#redis-trib check 10.0.1.131:6379    \\检查集群
+#redis-cli -h 10.0.1.131 -p 6379 -c -a Sunyard88  \\进入集群
+#CLUSTER NODES     \\查看集群
+#CLUSTER info        \\查看集群
+
+
+redis单机模式：
+#useradd -s /sbin/nologin redis -u 1020 &&\
+ mkdir -p /sunyard/middleware/redis/6379 && \
+ chown -R redis:redis /sunyard/middleware/redis
+
+#docker run -d  --restart=always \
+--name redis \
+--sysctl net.core.somaxconn=10240 \
+--log-driver=json-file --log-opt max-size=100k --log-opt max-file=5 \
+-e REDIS_PASSWORD=Sunyard88 \
+-e REDIS_PORT=6379 \
+-e REDIS_CLUSTER=no \
+-p 6379:6379 \
+-v /sunyard/middleware/redis/6379:/data/redis \
+docker.sunyard.com:5000/redis:3.2.11
+
+
+
+_________________________________________________________________________________________________________________
+
+mysql安装
+
+#useradd -s /sbin/nologin mysql -u 1010  && \
+mkdir -p /sunyard/mysql/conf  /sunyard/mysql/data && \
+chown -R mysql:mysql  /sunyard/mysql   \\将my.cnf  复制到/sunyard/mysql/conf 文件下
+
+
+#docker run -d --restart=always  \
+--name mysql \
+--log-driver=json-file --log-opt max-size=100k --log-opt max-file=5 \
+-v /sunyard/mysql/conf:/etc/mysql  \
+-v /sunyard/mysql/data:/var/lib/mysql \
+-v /etc/localtime:/etc/localtime \
+-e MYSQL_ROOT_PASSWORD=Sunyard88 \
+-p 3306:3306 \
+docker.sunyard.com:5000/mysql:5.6
+
+
+_________________________________________________________________________________________________________________
+
+FastDFS  文件服务器
+
+#mkdir -p /sunyard/fdfs_storage  /sunyard/fdfs_transfer
+
+fdfs_transfer:
+
+#docker run --rm \
+--log-driver=json-file --log-opt max-size=100k --log-opt max-file=5 \
+--name tracker  \
+--network=host \
+docker.sunyard.com:5000/fdfs_transfer:5.12
+
+fdfs_storage:
+
+#docker run --rm  \
+--name storage   \
+--log-driver=json-file --log-opt max-size=100k --log-opt max-file=5 \
+--network=host \
+-e TRACKER=10.0.1.130 \
+docker.sunyard.com:5000/fdfs_storage:5.12
+
+http://$ip/group1/M00
+
+
+mkdir -p /sunyard/fastdfs
+
+docker run -d --restart=always \
+--name fastdfs   \
+-e WEB_PORT=8080 \ 
+-e IP=10.1.68.235 \
+--network=host  \
+--privileged=true  \
+-v /sunyard/fastdfs:/var/local/fdfs  \
+fast:5.11
+
+
+
+tomcat catalina.out 自动分割
+
+/sunyard/tomcat/log/catalina.out {
+daily
+rotate 5
+missingok
+dateext
+compress
+copytruncate
+notifempty
+}
