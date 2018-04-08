@@ -1,6 +1,7 @@
-zookeeper文档：
+`zookeeper文档：`
 
-变量：
+`变量：`
+
 ```
 ENV tickTime=2000
 ENV dataDir=/var/lib/zookeeper/data
