@@ -1,6 +1,6 @@
-#zookeeper文档：
+# zookeeper文档：
 
-`##变量：`
+## 变量：
 
 ```
 ENV tickTime=2000
@@ -12,7 +12,7 @@ ENV syncLimit=10
 ENV maxClientCnxns=60
 ```
 
-`##单机：`
+## 单机：
 
 ```
 useradd -s /sbin/nologin zookeeper -u 1015 && \
@@ -29,13 +29,13 @@ docker.sunyard.com:5000/zookeeper:3.4.11
 ```
 
 
-`集群：`
+## 集群：
 ```
 useradd  -s /sbin/nologin  zookeeper -u 1015 && \
 chown -R  zookeeper:zookeeper /sunyard/middleware/zookeeper
 ```
 
-`middleware1：`
+### middleware1：
 ```
 docker run -d --restart=always \
 --name zookeeper \
@@ -47,7 +47,7 @@ docker.sunyard.com:5000/zookeeper:3.4.11  \
 zoo3.sunyard.com,zoo2.sunyard.com,zoo1.sunyard.com  3
 ```
 
-`middleware2：`
+### middleware2：
 ```
 docker run -d --restart=always \
 --name zookeeper \
@@ -59,7 +59,7 @@ docker.sunyard.com:5000/zookeeper:3.4.11  \
 zoo3.sunyard.com,zoo2.sunyard.com,zoo1.sunyard.com  2
 ```
 
-`middleware3：`
+### middleware3：
 ```
 docker run -d --restart=always \
 --name zookeeper \
