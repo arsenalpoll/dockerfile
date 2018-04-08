@@ -39,17 +39,17 @@ docker.sunyard.com:5000/redis:3.2.11
 ```
 
 #### 全部启动后，middleware1 手动执行
-`docker exec -it redis_master bash `   \\进入容器
+`docker exec -it redis_master bash `     `进入容器`
 
-`redis-trib create --replicas 1 10.0.1.131:6379 10.0.1.132:6379 10.0.1.133:6379  10.0.1.131:6380 10.0.1.132:6380 10.0.1.133:6380`   \\必须以ip形式创建，如填写域名报错！
+`redis-trib create --replicas 1 10.0.1.131:6379 10.0.1.132:6379 10.0.1.133:6379  10.0.1.131:6380 10.0.1.132:6380 10.0.1.133:6380`    `必须以ip形式创建，如填写域名报错！`
 
-`redis-trib check 10.0.1.131:6379`    \\检查集群
+`redis-trib check 10.0.1.131:6379`    `检查集群`
 
-`redis-cli -h 10.0.1.131 -p 6379 -c -a Sunyard88` \\进入集群
+`redis-cli -h 10.0.1.131 -p 6379 -c -a Sunyard88`   `进入集群`
 
-`CLUSTER NODES`    \\查看集群
+`CLUSTER NODES`    `查看集群`
 
-`CLUSTER info`        \\查看集群
+`CLUSTER info`        `查看集群`
 
 
 ### redis单机模式：
