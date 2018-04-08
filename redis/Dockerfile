@@ -88,9 +88,6 @@ COPY docker-entrypoint.sh /usr/local/bin/
 COPY redis.conf /usr/local/etc/redis/redis.conf
 COPY redis-trib.rb /usr/bin/redis-trib
 ENTRYPOINT ["docker-entrypoint.sh"]
-#CMD ["start.sh"]
-#CMD ["redis-server","/usr/local/etc/redis/redis.conf","|tee /data/redis/log/redis.log"]
-#CMD redis-server /usr/local/etc/redis/redis.conf |tee /data/redis/log/redis.log
+
 CMD ["redis-server","/usr/local/etc/redis/redis.conf"]
-#CMD su redis -c "redis-server /usr/local/etc/redis/redis.conf |tee /data/redis/log/redis.log"
 EXPOSE $REDIS_PORT   1$REDIS_PORT
