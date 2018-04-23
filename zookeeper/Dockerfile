@@ -36,6 +36,10 @@ ENV initLimit=20
 ENV syncLimit=10
 ENV maxClientCnxns=60
 ENV ZOO_CLUSTER=no
+ENV purgeInterval=24
+ENV snapRetainCount=24
+
+
 
 # add startup script
 ADD entrypoint.sh entrypoint.sh
