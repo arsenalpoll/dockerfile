@@ -14,6 +14,8 @@ ZOOKEEPER_CONFIG="$ZOOKEEPER_CONFIG"$'\n'"clientPort=$clientPort"
 ZOOKEEPER_CONFIG="$ZOOKEEPER_CONFIG"$'\n'"initLimit=$initLimit"
 ZOOKEEPER_CONFIG="$ZOOKEEPER_CONFIG"$'\n'"syncLimit=$syncLimit"
 ZOOKEEPER_CONFIG="$ZOOKEEPER_CONFIG"$'\n'"maxClientCnxns=$maxClientCnxns"
+ZOOKEEPER_CONFIG="$ZOOKEEPER_CONFIG"$'\n'"autopurge.snapRetainCount=$snapRetainCount"
+ZOOKEEPER_CONFIG="$ZOOKEEPER_CONFIG"$'\n'"autopurge.purgeInterval=$purgeInterval"
 
 IFS=', ' read -r -a ZOOKEEPER_SERVERS_ARRAY <<< "$ZOOKEEPER_SERVERS"
 export ZOOKEEPER_SERVERS_ARRAY=$ZOOKEEPER_SERVERS_ARRAY
@@ -41,6 +43,8 @@ ZOOKEEPER_CONFIG="$ZOOKEEPER_CONFIG"$'\n'"clientPort=$clientPort"
 ZOOKEEPER_CONFIG="$ZOOKEEPER_CONFIG"$'\n'"initLimit=$initLimit"
 ZOOKEEPER_CONFIG="$ZOOKEEPER_CONFIG"$'\n'"syncLimit=$syncLimit"
 ZOOKEEPER_CONFIG="$ZOOKEEPER_CONFIG"$'\n'"maxClientCnxns=$maxClientCnxns"
+ZOOKEEPER_CONFIG="$ZOOKEEPER_CONFIG"$'\n'"autopurge.snapRetainCount=$snapRetainCount"
+ZOOKEEPER_CONFIG="$ZOOKEEPER_CONFIG"$'\n'"autopurge.purgeInterval=$purgeInterval"
 
 echo "$ZOOKEEPER_CONFIG" | tee conf/zoo.cfg
 chown -R zookeeper:zookeeper /var/lib/zookeeper
