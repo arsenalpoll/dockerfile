@@ -1,16 +1,5 @@
 FROM debian:stretch-slim
 
-RUN cat << EOF > /etc/apt/sources.list
-deb http://mirrors.aliyun.com/debian/ stretch main non-free contrib
-deb-src http://mirrors.aliyun.com/debian/ stretch main non-free contrib
-deb http://mirrors.aliyun.com/debian-security stretch/updates main
-deb-src http://mirrors.aliyun.com/debian-security stretch/updates main
-deb http://mirrors.aliyun.com/debian/ stretch-updates main non-free contrib
-deb-src http://mirrors.aliyun.com/debian/ stretch-updates main non-free contrib
-deb http://mirrors.aliyun.com/debian/ stretch-backports main non-free contrib
-deb-src http://mirrors.aliyun.com/debian/ stretch-backports main non-free contrib
-EOF
-
 RUN groupadd -u 1010 -r mysql; \
 	useradd -u 1010 -r -g mysql mysql ; \
 	ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime; \
