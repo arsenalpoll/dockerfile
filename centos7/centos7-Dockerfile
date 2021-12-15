@@ -1,0 +1,37 @@
+FROM golang:alpine as grpcurl
+RUN sed -i 's/dl-cdn.alpinelinux.org/mirrors.tuna.tsinghua.edu.cn/g' /etc/apk/repositories \
+    && apk update \
+    && apk add --virtual build-dependencies git \
+    && apk add bash curl jq 
+RUN go env -w GOPROXY=https://goproxy.cn && go get -u github.com/fullstorydev/grpcurl \
+    && go install github.com/fullstorydev/grpcurl/cmd/grpcurl@latest
+RUN go get -u github.com/davecheney/httpstat \
+    && go install github.com/davecheney/httpstat@latest
+	
+	
+FROM centos:7 as redis-cli
+	
+RUN  yum install -y  gcc gcc-c++ make autoconf ; yum clean all
+RUN cd /tmp &&\
+    curl http://download.redis.io/redis-stable.tar.gz | tar xz &&\
+    make -C redis-stable &&\
+    cp redis-stable/src/redis-cli /usr/local/bin &&\
+    rm -rf /tmp/redis-stable
+	
+FROM centos:centos7
+COPY --from=grpcurl  /go/bin/grpcurl /usr/bin/grpcurl
+COPY --from=grpcurl  /go/bin/httpstat /usr/bin/httpstat
+COPY --from=redis-cli /usr/local/bin/redis-cli /usr/bin/redis-cli
+
+RUN ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime
+RUN yum install -y vim bash tcpdump curl wget strace mysql-client iproute2 redis jq iftop tzdata tar nmap bind-tools htop busybox-extras telnet \
+	&& rpm -Uvh https://forensics.cert.org/cert-forensics-tools-release-el7.rpm \
+	&& yum --enablerepo=forensics install -y musl-libc-static \
+	&& yum clean all;rm -rf /var/cache/yum/
+	
+RUN yum install -y https://repo.mysql.com//mysql57-community-release-el7-11.noarch.rpm \
+	&& yum install -y mysql-community-client.x86_64 net-tools \
+	&& yum clean all;rm -rf /var/cache/yum/
+
+
+CMD ["/bin/bash"]
