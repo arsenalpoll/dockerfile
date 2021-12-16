@@ -9,7 +9,7 @@ RUN go get -u github.com/davecheney/httpstat \
     && go install github.com/davecheney/httpstat@latest
 	
 	
-FROM centos:7 as redis-cli
+FROM centos:centos7 as redis-cli
 	
 RUN  yum install -y  gcc gcc-c++ make autoconf ; yum clean all
 RUN cd /tmp &&\
