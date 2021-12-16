@@ -32,6 +32,7 @@ RUN yum install -y vim bash tcpdump curl wget strace mysql-client iproute2 redis
 RUN yum install -y https://repo.mysql.com//mysql57-community-release-el7-11.noarch.rpm \
 	&& yum install -y mysql-community-client.x86_64 net-tools \
 	&& yum clean all;rm -rf /var/cache/yum/
-
+	
+RUN mkdir -p /mnt/logs
 
 CMD ["/bin/bash"]
