@@ -1,0 +1,19 @@
+FROM golang:bullseye
+
+RUN apt-get update  \
+	&& apt-get install -y --no-install-recommends git bash curl jq
+RUN go get -u github.com/fullstorydev/grpcurl \
+	&& go install github.com/fullstorydev/grpcurl/cmd/grpcurl@latest
+  
+RUN go install github.com/davecheney/httpstat@latest
+
+RUN echo 'deb http://mirrors.aliyun.com/debian/ bullseye main non-free contrib \n\
+	deb-src http://mirrors.aliyun.com/debian/ bullseye main non-free contrib \n\
+	deb http://mirrors.aliyun.com/debian-security/ bullseye-security main \n\
+	deb-src http://mirrors.aliyun.com/debian-security/ bullseye-security main \n\
+	deb http://mirrors.aliyun.com/debian/ bullseye-updates main non-free contrib \n\
+	deb-src http://mirrors.aliyun.com/debian/ bullseye-updates main non-free contrib \n\
+	deb http://mirrors.aliyun.com/debian/ bullseye-backports main non-free contrib \n\
+	deb-src http://mirrors.aliyun.com/debian/ bullseye-backports main non-free contrib \n'\
+	> /etc/apt/sources.list
+ 
