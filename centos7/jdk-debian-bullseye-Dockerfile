@@ -1,0 +1,24 @@
+FROM registry.cn-hangzhou.aliyuncs.com/arseanl/jdk:httpstat as grpcurl
+
+FROM frolvlad/alpine-java:jdk8.202.08-slim as jdk
+ENV JAVA_HOME="/usr/lib/jvm/default-jvm"
+
+FROM debian:bullseye-slim
+
+COPY --from=grpcurl  /go/bin/grpcurl /usr/bin/grpcurl
+COPY --from=grpcurl  /go/bin/httpstat /usr/bin/httpstat
+COPY --from=jdk /usr/lib/jvm/default-jvm  /usr/lib/jvm/default-jvm
+
+RUN ln -s /usr/lib/jvm/default-jvm/bin/*  /usr/bin/
+RUN ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime
+ENV TZ=Asia/Shanghai LC_ALL=C.UTF-8 LANG=C.UTF-8 LANGUAGE=C.UTF-8
+RUN mkdir -p /mnt/logs
+
+RUN apt-get update  \
+	&& apt-get install -y --no-install-recommends vim bash tcpdump net-tools curl wget strace iproute2 jq iftop tzdata tar htop telnet procps dstat zip unzip ca-certificates\
+	&& rm -rf /var/lib/apt/lists/*
+
+RUN touch /mnt/logs/1.log
+COPY --from=grpcurl /etc/apt/sources.list /etc/apt/sources.list
+
+CMD ["tail","-f","/mnt/logs/1.log"]
